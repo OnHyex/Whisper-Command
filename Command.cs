@@ -1,39 +1,59 @@
 ﻿using System;
 using PulsarModLoader.Chat.Commands.CommandRouter;
 using PulsarModLoader.Utilities;
+using UnityEngine;
 
 namespace Whisper_Command
 {
     class privateMessage : ChatCommand
     {
-        public override string[] CommandAliases() => new string[] { "whisper", "w" };
+        public override string[] CommandAliases() => new string[] { "whisper" };
         public override string Description() => "sends a whisper to a player";
         public override string[][] Arguments() => new string[][] { new string[] { "%player_name" } };
         public override void Execute(string arguments)
         {
-            string[] argument = arguments.ToLower().Split(new char[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
-            if (argument.Length < 1 || string.IsNullOrWhiteSpace(argument[0]))
+            string Message = arguments.ToLower().TrimStart(' ');
+            PLPlayer destinationPlayer = GetPlayer(Message, out bool isPlayerID);
+            if (destinationPlayer == null)
             {
-                Messaging.Echo(PLNetworkManager.Instance.LocalPlayer, "whisper (player name | playerid) (message)");
+                failMessage();
                 return;
             }
-            PLPlayer destinationPlayer = GetPlayer(argument[0]);
             PLPlayer localPlayer = PLNetworkManager.Instance.LocalPlayer;
-            string Message = argument[1];
-            if (!argument[0].Equals(destinationPlayer.GetPlayerName()))
+            if (!isPlayerID)
             {
-                int lengthExtraWordsInName = destinationPlayer.GetPlayerName().Split(new char[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries)[1].Length;
-                Message = Message.Substring(lengthExtraWordsInName + 1);
+                if (destinationPlayer.GetPlayerName(false).Length > arguments.Length)
+                {
+                    failMessage();
+                    return;
+                }
+                Message = arguments.Substring(destinationPlayer.GetPlayerName(false).Length);
+            } 
+            else
+            {
+                if (destinationPlayer.GetPlayerID().ToString().Length > arguments.Length)
+                {
+                    failMessage();
+                    return;
+                }
+                Message = arguments.Substring(destinationPlayer.GetPlayerID().ToString().Length);
             }
-            
-            Messaging.Echo(destinationPlayer, "<color=#00ffffff>[Whisper] </color><color=#" + PLPlayer.GetClassHexColorFromID(localPlayer.GetClassID()) + ">" + localPlayer.GetPlayerName() + " <" + localPlayer.GetClassName() + "></color> : " + Message);
-            Messaging.Echo(localPlayer, "<color=#00ffffff>[Whisper] </color><color=#" + PLPlayer.GetClassHexColorFromID(localPlayer.GetClassID()) + ">" + localPlayer.GetPlayerName() + " <" + localPlayer.GetClassName() + "></color> : " + Message);
+            if (string.IsNullOrWhiteSpace(Message))
+            {
+                failMessage();
+                return;
+            }
+
+            Messaging.Echo(destinationPlayer, "<color=#00ffffff>[Whisper] </color><color=#" + PLPlayer.GetClassHexColorFromID(localPlayer.GetClassID()) + ">" + localPlayer.GetPlayerName(false) + " <" + localPlayer.GetClassName() + "></color> : " + Message);
+            Messaging.Echo(localPlayer, "<color=#00ffffff>[Whisper to] </color><color=#" + PLPlayer.GetClassHexColorFromID(destinationPlayer.GetClassID()) + ">" + destinationPlayer.GetPlayerName(false) + " <" + destinationPlayer.GetClassName() + "></color> : " + Message);
         }
-        internal static PLPlayer GetPlayer(string argument)
+        internal static PLPlayer GetPlayer(string argument, out bool isPlayerID)
         {
             PLPlayer player = null;
-            if (Int32.TryParse(argument, out int num))
+            isPlayerID = false;
+            if (Int32.TryParse(argument.Split(new char[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries)[0], out int num))
             {
+                isPlayerID = true;
                 foreach (PLPlayer selector in PLServer.Instance.AllPlayers)
                 {
                     if (selector != null && selector.TeamID == 0 && selector.GetPlayerID() == num)
@@ -45,7 +65,7 @@ namespace Whisper_Command
             }
             foreach (PLPlayer selector in PLServer.Instance.AllPlayers)
             {
-                if (selector != null && selector.TeamID == 0 && selector.GetPlayerName(false).ToLower().StartsWith(argument))
+                if (selector != null && selector.TeamID == 0 && argument.ToLower().StartsWith(selector.GetPlayerName(false).ToLower()))
                 {
                     player = selector;
                     return player;
@@ -53,6 +73,10 @@ namespace Whisper_Command
             }
             Messaging.Echo(PLNetworkManager.Instance.LocalPlayer, "Invalid PlayerName or PlayerID");
             return player;
+        }
+        internal static void failMessage()
+        {
+            Messaging.Echo(PLNetworkManager.Instance.LocalPlayer, "whisper (player name | playerid) (message)");
         }
     }
 

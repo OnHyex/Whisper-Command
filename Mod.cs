@@ -7,9 +7,9 @@ namespace Whisper_Command
 {
     public class Mod : PulsarMod
     {
-        public override string Version => "1.0.0";
+        public override string Version => "1.1.0";
         public override string Author => "OnHyex";
-        public override string ShortDescription => "Adds a command to whisper";
+        public override string ShortDescription => "Adds a command to whisper (/whisper)";
         public override string Name => "WhisperCommand";
         public override string HarmonyIdentifier()
         {
