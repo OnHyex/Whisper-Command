@@ -15,7 +15,7 @@ namespace Whisper_Command
         }
         public override void Draw()
         {
-            Config.ColorPicker(new Rect(258f, 30f, 240f, 160f), "Text Colour", Config.TextColour);
+            Config.ColorPicker(new Rect(8f, 30f, 240f, 160f), "Text Colour", Config.TextColour);
         }
         public static void ColorPicker(Rect rect, string Name, SaveValue<string> saveValue)
         {
