@@ -20,6 +20,11 @@ namespace Whisper_Command
                 return;
             }
             PLPlayer localPlayer = PLNetworkManager.Instance.LocalPlayer;
+            if (destinationPlayer.IsBot)
+            {
+                Messaging.Echo(localPlayer, "Don't whisper bots");
+            }
+            
             if (!isPlayerID)
             {
                 if (destinationPlayer.GetPlayerName(false).Length > arguments.Length)
@@ -43,11 +48,10 @@ namespace Whisper_Command
                 failMessage();
                 return;
             }
-
-            Messaging.Echo(destinationPlayer, "<color=#00ffffff>[Whisper] </color><color=#" + PLPlayer.GetClassHexColorFromID(localPlayer.GetClassID()) + ">" + localPlayer.GetPlayerName(false) + " <" + localPlayer.GetClassName() + "></color> : " + Message);
-            Messaging.Echo(localPlayer, "<color=#00ffffff>[Whisper to] </color><color=#" + PLPlayer.GetClassHexColorFromID(destinationPlayer.GetClassID()) + ">" + destinationPlayer.GetPlayerName(false) + " <" + destinationPlayer.GetClassName() + "></color> : " + Message);
+            Messaging.Echo(destinationPlayer, $"<color={Config.TextColour.Value}>[Whisper from] </color><color=#" + PLPlayer.GetClassHexColorFromID(localPlayer.GetClassID()) + ">" + localPlayer.GetPlayerName(false) + " <" + localPlayer.GetClassName() + "></color> : " + Message);
+            Messaging.Echo(localPlayer, $"<color={Config.TextColour.Value}>[Whisper to] </color><color=#" + PLPlayer.GetClassHexColorFromID(destinationPlayer.GetClassID()) + ">" + destinationPlayer.GetPlayerName(false) + " <" + destinationPlayer.GetClassName() + "></color> : " + Message);
         }
-        internal static PLPlayer GetPlayer(string argument, out bool isPlayerID)
+        private static PLPlayer GetPlayer(string argument, out bool isPlayerID)
         {
             PLPlayer player = null;
             isPlayerID = false;
@@ -71,10 +75,10 @@ namespace Whisper_Command
                     return player;
                 }
             }
-            Messaging.Echo(PLNetworkManager.Instance.LocalPlayer, "Invalid PlayerName or PlayerID");
+            failMessage();
             return player;
         }
-        internal static void failMessage()
+        private static void failMessage()
         {
             Messaging.Echo(PLNetworkManager.Instance.LocalPlayer, "whisper (player name | playerid) (message)");
         }
