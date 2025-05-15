@@ -7,7 +7,7 @@ namespace Whisper_Command
 {
     class privateMessage : ChatCommand
     {
-        public override string[] CommandAliases() => new string[] { "whisper" };
+        public override string[] CommandAliases() => new string[] { "whisper", "w" };
         public override string Description() => "sends a whisper to a player";
         public override string[][] Arguments() => new string[][] { new string[] { "%player_name" } };
         public override void Execute(string arguments)
@@ -22,7 +22,15 @@ namespace Whisper_Command
             PLPlayer localPlayer = PLNetworkManager.Instance.LocalPlayer;
             if (destinationPlayer.IsBot)
             {
-                Messaging.Echo(localPlayer, "Don't whisper bots");
+                if(UnityEngine.Random.Range(0, 100) == 0)
+                {
+                    Messaging.Echo(localPlayer, "<color=#" + PLPlayer.GetClassHexColorFromID(destinationPlayer.GetClassID()) + ">" + destinationPlayer.GetPlayerName(false) + " <" + destinationPlayer.GetClassName() + "></color> : 01000100 01101111 01101110 00100111 01110100 00100000 01110111 01101000 01101001 01110011 01110000 01100101 01110010 00100000 01100010 01101111 01110100 01110011 00100010");
+                }
+                else
+                {
+                    Messaging.Echo(localPlayer, "Don't whisper bots");
+                }
+                return;
             }
             
             if (!isPlayerID)
@@ -75,7 +83,6 @@ namespace Whisper_Command
                     return player;
                 }
             }
-            failMessage();
             return player;
         }
         private static void failMessage()
